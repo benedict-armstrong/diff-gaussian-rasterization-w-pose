@@ -1,0 +1,87 @@
+name: Build diff-gaussian-rasterization Wheel
+
+on:
+  push:
+    branches:
+      - main # Or your default branch if different
+  workflow_dispatch: # Allows manual triggering from the Actions tab
+
+jobs:
+  build_cuda_wheel:
+    name: Build Python Wheel for CUDA 11.8
+    runs-on: ubuntu-latest # The GitHub Actions host runner
+
+    # Use a container for the build environment to get CUDA 11.8 and compatible GCC
+    container:
+      image: nvidia/cuda:11.8.0-devel-ubuntu22.04
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        # If this workflow is in the benedict-armstrong/diff-gaussian-rasterization-w-pose repo itself,
+        # you don't need the 'repository' or 'ref' lines.
+        # If it's in your fork, it will check out your fork.
+        # To build a specific commit from the original repo (if this workflow is in a separate utility repo):
+        # with:
+        #   repository: benedict-armstrong/diff-gaussian-rasterization-w-pose
+        #   ref: 'ce0ce7fd94044554fc9e8244f63cb9089841d66d' # Optional: specific commit
+
+      - name: Install Python 3.10 and build tools
+        run: |
+          export DEBIAN_FRONTEND=noninteractive
+          apt-get update
+          apt-get install -y --no-install-recommends \
+            python3.10 \
+            python3.10-dev \
+            python3.10-venv \
+            python3-pip \
+            curl \
+            build-essential
+          update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.10 1
+          update-alternatives --install /usr/bin/python python /usr/bin/python3.10 1
+          python3 -m pip install --upgrade pip
+
+          # Install uv inside the container for this job
+          curl -LsSf https://astral.sh/uv/install.sh | sh
+          # Add uv to PATH for subsequent steps
+          export PATH="/root/.cargo/bin:$PATH"
+          echo "uv version: $(uv --version)"
+          echo "python version: $(python --version)"
+          echo "gcc version: $(gcc --version)"
+          echo "nvcc version: $(nvcc --version)"
+
+      - name: Create Virtual Environment and Install Dependencies
+        env:
+          # Set TORCH_CUDA_ARCH_LIST for PyTorch extension compilation
+          TORCH_CUDA_ARCH_LIST: "8.6"
+        run: |
+          export PATH="/root/.cargo/bin:$PATH" # Ensure uv is in PATH
+          python3 -m venv .venv
+          source .venv/bin/activate
+          
+          # Install PyTorch for CUDA 11.8
+          uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+          
+          # Install Python build tools
+          uv pip install build wheel setuptools
+
+      - name: Build Wheel
+        env:
+          # Set TORCH_CUDA_ARCH_LIST for PyTorch extension compilation
+          TORCH_CUDA_ARCH_LIST: "8.6"
+        run: |
+          export PATH="/root/.cargo/bin:$PATH" # Ensure uv is in PATH
+          source .venv/bin/activate
+          
+          # Standard way to build a wheel
+          # This assumes setup.py or pyproject.toml is in the root of the checked-out repository
+          python3 -m build --wheel --outdir dist .
+          
+          echo "Wheel built:"
+          ls -R dist/
+
+      - name: Upload Wheel as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: diff-gaussian-rasterization-wheel-py310-cuda118-ubuntu2204
+          path: dist/*.whl
