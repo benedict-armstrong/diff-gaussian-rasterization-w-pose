@@ -61,7 +61,9 @@ jobs:
           source .venv/bin/activate
           
           # Install PyTorch for CUDA 11.8
-          pip install torch==2.1.0+cu118 torchvision==0.16.0+cu118 --index-url https://download.pytorch.org/whl/cu118
+          pip install torch==2.3.0+cu118 torchvision==0.18.0+cu118 --index-url https://download.pytorch.org/whl/cu118
+          pip install build wheel setuptools ninja numpy
+
           
           # Install Python build tools
           pip install build wheel setuptools
@@ -76,7 +78,7 @@ jobs:
           
           # Standard way to build a wheel
           # This assumes setup.py or pyproject.toml is in the root of the checked-out repository
-          python3 -m build --wheel --outdir dist .
+          python3 -m build --wheel --no-isolation --outdir dist .
           
           echo "Wheel built:"
           ls -R dist/
