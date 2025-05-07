@@ -42,10 +42,10 @@ jobs:
           python3 -m pip install --upgrade pip
 
           # Install uv inside the container for this job
-          curl -LsSf https://astral.sh/uv/install.sh | sh
+          # curl -LsSf https://astral.sh/uv/install.sh | sh
           # Add uv to PATH for subsequent steps
-          export PATH="/root/.cargo/bin:$PATH"
-          echo "uv version: $(uv --version)"
+          # export PATH="/root/.cargo/bin:$PATH"
+          # echo "uv version: $(uv --version)"
           echo "python version: $(python --version)"
           echo "gcc version: $(gcc --version)"
           echo "nvcc version: $(nvcc --version)"
@@ -55,22 +55,21 @@ jobs:
           # Set TORCH_CUDA_ARCH_LIST for PyTorch extension compilation
           TORCH_CUDA_ARCH_LIST: "8.6"
         run: |
-          export PATH="/root/.cargo/bin:$PATH" # Ensure uv is in PATH
+          # export PATH="/root/.cargo/bin:$PATH" # Ensure uv is in PATH
           python3 -m venv .venv
           source .venv/bin/activate
           
           # Install PyTorch for CUDA 11.8
-          uv pip install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
+          pip install torch --index-url https://download.pytorch.org/whl/cu118
           
           # Install Python build tools
-          uv pip install build wheel setuptools
+          pip install build wheel setuptools
 
       - name: Build Wheel
         env:
           # Set TORCH_CUDA_ARCH_LIST for PyTorch extension compilation
           TORCH_CUDA_ARCH_LIST: "8.6"
         run: |
-          export PATH="/root/.cargo/bin:$PATH" # Ensure uv is in PATH
           source .venv/bin/activate
           
           # Standard way to build a wheel
