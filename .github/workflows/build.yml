@@ -51,6 +51,7 @@ jobs:
           echo "nvcc version: $(nvcc --version)"
 
       - name: Create Virtual Environment and Install Dependencies
+        shell: bash
         env:
           # Set TORCH_CUDA_ARCH_LIST for PyTorch extension compilation
           TORCH_CUDA_ARCH_LIST: "8.6"
@@ -66,6 +67,7 @@ jobs:
           pip install build wheel setuptools
 
       - name: Build Wheel
+        shell: bash
         env:
           # Set TORCH_CUDA_ARCH_LIST for PyTorch extension compilation
           TORCH_CUDA_ARCH_LIST: "8.6"
