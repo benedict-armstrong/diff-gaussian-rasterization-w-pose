@@ -61,7 +61,7 @@ jobs:
           source .venv/bin/activate
           
           # Install PyTorch for CUDA 11.8
-          pip install torch --index-url https://download.pytorch.org/whl/cu118
+          pip install torch==2.1.0+cu118 torchvision==0.16.0+cu118 --index-url https://download.pytorch.org/whl/cu118
           
           # Install Python build tools
           pip install build wheel setuptools
