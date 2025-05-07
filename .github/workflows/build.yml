@@ -18,6 +18,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          submodules: recursive
         # If this workflow is in the benedict-armstrong/diff-gaussian-rasterization-w-pose repo itself,
         # you don't need the 'repository' or 'ref' lines.
         # If it's in your fork, it will check out your fork.
